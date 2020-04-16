@@ -35,7 +35,7 @@ Software:
 
 3. Build Deepstrings
 
-   Run `make` under `pin-&lt;VERSION&gt;/source/tools/deepstrings` directory. For 64-bit application,
+   Run `make` under `pin-<VERSION>/source/tools/deepstrings` directory. For 64-bit application,
 
    ```bash
    $ make obj-intel64/deepstrings.so
@@ -49,7 +49,7 @@ Software:
 
 ## Run
 
-Under `pin-&lt;VERSION&gt;/source/tools/deepstrings` directory
+Under `pin-<VERSION>/source/tools/deepstrings` directory,
 
 ```bash
 ../../../pin -t obj-intel64/deepstrings.so -- <YOUR_APP>

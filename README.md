@@ -18,38 +18,38 @@ Software:
 
 1. Download Pin
 
-Download tar ball from [Download Page](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads).
+   Download tar ball from [Pin Download Page](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads).
 
 2. Incorporate Deepstrings
 
-Deploy files in appropriate directory to prepare for build.
+   Deploy files in appropriate directory to prepare for build.
 
-```bash
-$ tar zxf pin-<VERSION>.tar.gz
-$ mkdir pin-<VERSION>/source/tools/deepstrings
-$ cd pin-<VERSION>/source/tools/deepstrings
-$ cp ~/deepstrings/deepstrings.cpp .
-$ cp ../MyPinTool/makefile* .
-$ sed -i 's/MyPinTool/deepstrings/' makefile.rules
-```
+   ```bash
+   $ tar zxf pin-<VERSION>.tar.gz
+   $ mkdir pin-<VERSION>/source/tools/deepstrings
+   $ cd pin-<VERSION>/source/tools/deepstrings
+   $ cp ~/deepstrings/deepstrings.cpp .
+   $ cp ../MyPinTool/makefile* .
+   $ sed -i 's/MyPinTool/deepstrings/' makefile.rules
+   ```
 
 3. Build Deepstrings
 
-Run 'make' command under pin-<VERSION>/source/tools/deepstrings directory. For 64-bit application,
+   Run `make` under `pin-&lt;VERSION&gt;/source/tools/deepstrings` directory. For 64-bit application,
 
-```bash
-$ make obj-intel64/deepstrings.so
-```
+   ```bash
+   $ make obj-intel64/deepstrings.so
+   ```
 
-For 32-bit application,
+   For 32-bit application,
 
-```bash
-$ make obj-ia32/deepstrings.so TARGET=ia32
-```
+   ```bash
+   $ make obj-ia32/deepstrings.so TARGET=ia32
+   ```
 
 ## Run
 
-Under pin-<VERSION>/source/tools/deepstrings directory,
+Under `pin-&lt;VERSION&gt;/source/tools/deepstrings` directory
 
 ```bash
 ../../../pin -t obj-intel64/deepstrings.so -- <YOUR_APP>

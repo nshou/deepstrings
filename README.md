@@ -55,7 +55,7 @@ Under `pin-<VERSION>/source/tools/deepstrings` directory,
 ../../../pin -t obj-intel64/deepstrings.so -- <YOUR_APP>
 ```
 
-then `deepstrings.out` and `deepstrings.out.debug` are produced in the same directory.
+then `deepstrings.out` is produced in the same directory.
 
 ## License
 

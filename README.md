@@ -35,7 +35,7 @@ Software:
    $ make obj-intel64/deepstrings.so
    ```
 
-   To cross-compile for 32-bit version,
+   For 32-bit applications,
 
    ```bash
    $ make obj-ia32/deepstrings.so TARGET=ia32
@@ -51,11 +51,12 @@ This will generate `deepstrings.out` in the same directory.
 
 ## License
 
-MIT.
+MIT. See COPYING and NOTICE.
 
 
 
 
+<!--
 
 - The purpose and goal of the project (e.g. This tool is designed to reverse the string encryption performed by malware X...)
 
@@ -66,3 +67,5 @@ MIT.
 - Installation and usage instructions, as clear as possible (the ideal would be a setup script or a list of copy-paste commands that are environment independent)
 
 - Any limitations faced by the tool, and how it could be improved in the future
+
+-->

@@ -5,7 +5,7 @@ Short description
 ## Requirement
 
 Hardware:
-- CPU: [Intel Pin-supported CPU](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool)
+- CPU: [Intel Pin-supported CPU](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-faq)
   - Tested on Xeon E5520
 
 Software:
@@ -47,7 +47,7 @@ Software:
 ${PIN_ROOT}/pin -t obj-intel64/deepstrings.so -- /bin/echo hello
 ```
 
-The output file `deepstrings.out` is created in the same directory.
+This will generate `deepstrings.out` in the same directory.
 
 ## License
 

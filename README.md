@@ -18,30 +18,24 @@ Software:
 
 1. Download Pin
 
-   Download tar ball from [Pin Download Page](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads).
-
-2. Incorporate Deepstrings
-
-   Deploy files in appropriate directory to prepare for build.
+   Download tar ball from [Pin Download Page](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads). Unzip it and set an environment variable `PIN_ROOT`.
 
    ```bash
-   $ tar zxf pin-<VERSION>.tar.gz
-   $ mkdir pin-<VERSION>/source/tools/deepstrings
-   $ cd pin-<VERSION>/source/tools/deepstrings
-   $ cp ~/deepstrings/deepstrings.cpp .
-   $ cp ../MyPinTool/makefile* .
-   $ sed -i 's/MyPinTool/deepstrings/' makefile.rules
+   $ tar zxf pin-3.13-98189-g60a6ef199-gcc-linux.tar.gz
+   $ export PIN_ROOT=$(pwd)/pin-3.13-98189-g60a6ef199-gcc-linux
    ```
 
-3. Build Deepstrings
+2. Build Deepstrings
 
-   Run `make` under `pin-<VERSION>/source/tools/deepstrings` directory. For 64-bit application,
+   Get source and run `make` under the source directory.
 
    ```bash
+   $ git clone https://github.com/nshou/deepstrings.git
+   $ cd deepstrings
    $ make obj-intel64/deepstrings.so
    ```
 
-   For 32-bit application,
+   To cross-compile for 32-bit version,
 
    ```bash
    $ make obj-ia32/deepstrings.so TARGET=ia32
@@ -49,13 +43,11 @@ Software:
 
 ## Run
 
-Under `pin-<VERSION>/source/tools/deepstrings` directory,
-
 ```bash
-../../../pin -t obj-intel64/deepstrings.so -- <YOUR_APP>
+${PIN_ROOT}/pin -t obj-intel64/deepstrings.so -- /bin/echo hello
 ```
 
-then `deepstrings.out` is produced in the same directory.
+The output file `deepstrings.out` is created in the same directory.
 
 ## License
 

@@ -45,19 +45,12 @@ static void debugprint(VOID *ip){
     fprintf(debugout, "\n");
 }
 
-static void print(void){
-    void *head;
+static void printone(void *head){
     struct str_chunk *sc;
-
-    for(auto itr = str_chunk_heads.begin(); itr != str_chunk_heads.end(); ++itr){
-        head = itr->first;
-        sc = itr->second;
-
-        // TODO: min length should be configurable
-        if(sc->nulltermed){
+    if(str_chunk_heads.find(head) != str_chunk_heads.end()){
+        sc = str_chunk_heads[head];
+        if(sc->len >= 3 && sc->nulltermed){ // TODO: should be configurable
             fprintf(out, "%p %p %d: %s\n", sc->lastupdateip, head, sc->len, (char *)head);
-        }else{
-            // TODO: memcpy + 0...
         }
     }
 }
@@ -66,7 +59,7 @@ static void print(void){
     // TODO: clear 3 maps and call in fini
 //}
 
-static void find_and_coalesce(void *ip, void *_dst, int size){
+static void _find_and_coalesce(void *ip, void *_dst, int size){
     int i, head;
     char *dst = (char *)_dst;
     struct str_chunk *sc, *sc2;
@@ -89,10 +82,12 @@ static void find_and_coalesce(void *ip, void *_dst, int size){
                         sc->nulltermed = nulltermed;
                         str_chunk_tails.erase(dst - 1);
                         str_chunk_tails[dst + i - 1] = sc;
+                        printone(dst + i - sc->len);
                     }else{
                         if(sc->nulltermed != nulltermed){
                             sc->lastupdateip = ip;
                             sc->nulltermed = nulltermed;
+                            printone(dst - sc->len);
                         }
                     }
                 }else{
@@ -103,6 +98,7 @@ static void find_and_coalesce(void *ip, void *_dst, int size){
                         sc->nulltermed = nulltermed;
                         str_chunk_heads[dst] = sc;
                         str_chunk_tails[dst + i - 1] = sc;
+                        printone(dst);
                     }
                 }
             }else{
@@ -113,6 +109,7 @@ static void find_and_coalesce(void *ip, void *_dst, int size){
                     sc->nulltermed = nulltermed;
                     str_chunk_heads[dst + head] = sc;
                     str_chunk_tails[dst + i - 1] = sc;
+                    printone(dst + head);
                 }
             }
             head = i + 1;
@@ -134,14 +131,16 @@ static void find_and_coalesce(void *ip, void *_dst, int size){
                 str_chunk_tails.erase(dst + size + sc2->len - 1);
                 str_chunk_tails[dst + size + sc2->len - 1] = sc;
                 free(sc2);
+                printone(dst + size + sc2->len - sc->len);
             }else{
                 sc = str_chunk_heads[dst + size];
                 sc->lastupdateip = ip;
                 sc->len += size - head;
                 str_chunk_heads.erase(dst + size);
                 str_chunk_heads[dst + head] = sc;
+                printone(dst + head);
             }
-        }else{ // do not coalesce if no next chunk entry exists even if the trailing char is ASCII
+        }else{ // do not coalesce with the next if no next chunk exists even if the trailing char is ASCII
             if(head == 0 && str_chunk_tails.find(dst - 1) != str_chunk_tails.end()){
                 sc = str_chunk_tails[dst - 1];
                 sc->lastupdateip = ip;
@@ -149,6 +148,7 @@ static void find_and_coalesce(void *ip, void *_dst, int size){
                 sc->nulltermed = 0;
                 str_chunk_tails.erase(dst - 1);
                 str_chunk_tails[dst + size - 1] = sc;
+                printone(dst + size - sc->len);
             }else{
                 sc = (struct str_chunk *)malloc(sizeof(struct str_chunk));
                 sc->lastupdateip = ip;
@@ -156,13 +156,14 @@ static void find_and_coalesce(void *ip, void *_dst, int size){
                 sc->nulltermed = 0;
                 str_chunk_heads[dst + head] = sc;
                 str_chunk_tails[dst + size - 1] = sc;
+                printone(dst + head);
             }
         }
     }
 }
 
-static void _find_and_coalesce(VOID *ip){
-    find_and_coalesce(ip, wopmap[ip]->dst, wopmap[ip]->size);
+static void find_and_coalesce(VOID *ip){
+    _find_and_coalesce(ip, wopmap[ip]->dst, wopmap[ip]->size);
 }
 
 static VOID savewop(VOID *ip, VOID *addr, INT32 sz){
@@ -179,7 +180,7 @@ static void forgetwop(VOID *ip){
 
 static VOID memwriteop(VOID *ip){
     debugprint(ip);
-    _find_and_coalesce(ip);
+    find_and_coalesce(ip);
     forgetwop(ip);
 }
 
@@ -206,7 +207,6 @@ VOID instruction(INS ins, VOID *v){
 }
 
 VOID fini(INT32 code, VOID *v){
-    print();
     fprintf(out, "#eof\n");
     fprintf(debugout, "#eof\n");
     fclose(out);

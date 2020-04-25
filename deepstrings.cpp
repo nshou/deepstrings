@@ -53,10 +53,11 @@ static void print(void){
         head = itr->first;
         sc = itr->second;
 
+        // TODO: min length should be configurable
         if(sc->nulltermed){
             fprintf(out, "%p %p %d: %s\n", sc->lastupdateip, head, sc->len, (char *)head);
         }else{
-            // TODO:memcpy + 0...
+            // TODO: memcpy + 0...
         }
     }
 }
@@ -73,9 +74,10 @@ static void find_and_coalesce(void *ip, void *_dst, int size){
 
     head = 0;
     // TODO: size + 1 or size should be configurable since it may cause sigsegv or sigbus.
-    sigbus ignore
+    // TODO: signal handlers for sigbus and sigsegv
     for(i = 0; i < size; i++){
-        if(dst[i] == 0x00 || 0x7f < dst[i]){ // if non-ASCII
+        // TODO: should be configurable if only printable char is to be picked or not
+        if(dst[i] == 0x00 || 0x7f < (unsigned char)dst[i]){ // if non-ASCII
             nulltermed = dst[i] == '\0';
             if(head == 0){
                 auto prevchunk = str_chunk_tails.find(dst - 1);

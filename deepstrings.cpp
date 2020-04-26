@@ -59,6 +59,10 @@ static void printone(void *head){
     // TODO: clear 3 maps and call in fini
 //}
 
+static int isasciicommon(unsigned char ch){
+    return (0x20 <= ch && ch <= 0x7e) || ch == 0x09 || ch == 0x0a || ch == 0x0d;
+}
+
 static void _find_and_coalesce(void *ip, void *_dst, int size){
     int i, head;
     char *dst = (char *)_dst;
@@ -69,8 +73,8 @@ static void _find_and_coalesce(void *ip, void *_dst, int size){
     // TODO: size + 1 or size should be configurable since it may cause sigsegv or sigbus.
     // TODO: signal handlers for sigbus and sigsegv
     for(i = 0; i < size; i++){
-        // TODO: should be configurable if only printable char is to be picked or not
-        if(dst[i] == 0x00 || 0x7f < (unsigned char)dst[i]){ // if non-ASCII
+        // TODO: isascii* functions should be configurable
+        if(!isasciicommon((unsigned char)dst[i])){
             nulltermed = dst[i] == '\0';
             if(head == 0){
                 auto prevchunk = str_chunk_tails.find(dst - 1);

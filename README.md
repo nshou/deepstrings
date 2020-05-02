@@ -44,8 +44,8 @@ Software:
 ## Run
 
 ```bash
-gcc tests/001_catints.c -o tests/001_catints.out
-${PIN_ROOT}/pin -t obj-intel64/deepstrings.so -- tests/001_catints.out
+$ gcc tests/001_catints.c -o tests/001_catints.out
+$ ${PIN_ROOT}/pin -t obj-intel64/deepstrings.so -- tests/001_catints.out
 ```
 
 This will generate `deepstrings.out` in the same directory.

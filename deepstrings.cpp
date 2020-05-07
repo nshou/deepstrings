@@ -61,8 +61,8 @@ static VOID onread(VOID *ip, VOID *addr){
     unsigned long i;
     char *c = (char *)addr;
 
-    for(i = 0; c[i] != 0; i++){ //TODO: must care about sigsegv and sigbus
-        if(!iscommonascii((unsigned char)c[i]) || i > maxlen){
+    for(i = 0; c[i] != 0 && i < maxlen; i++){ //TODO: must care about sigsegv and sigbus
+        if(!iscommonascii((unsigned char)c[i])){
             if(i > floatlen){
                 memcpy(floatstr, c, i);
                 floatstr[i] = '\0';
@@ -74,7 +74,7 @@ static VOID onread(VOID *ip, VOID *addr){
         }
     }
 
-    if(i < minlen){
+    if(i < minlen || i >= maxlen){
         return;
     }
 
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]){
     INS_AddInstrumentFunction(instruction, 0);
     PIN_AddFiniFunction(fini, 0);
 
-    floatstr = (char *)malloc(sizeof(char) * maxlen);
+    floatstr = (char *)malloc(sizeof(char) * maxlen + 1);
     // Never returns
     PIN_StartProgram();
     return 0;

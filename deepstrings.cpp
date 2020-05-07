@@ -6,9 +6,11 @@
 
 static FILE *out;
 static unsigned long maxlen = 128;
-static unsigned long minlen = 8; //TODO: should be configurable
+static unsigned long floatlen = 48;
+static unsigned long minlen = 8; //TODO: these should be configurable
 static std::unordered_map<void *, char *> rop_history;
 static std::unordered_map<char *, char *> data_history;
+static char *floatstr;
 
 static int iscommonascii(unsigned char ch){
     return (0x20 <= ch && ch <= 0x7e) || ch == 0x09 || ch == 0x0a || ch == 0x0d;
@@ -61,7 +63,14 @@ static VOID onread(VOID *ip, VOID *addr){
 
     for(i = 0; c[i] != 0; i++){ //TODO: must care about sigsegv and sigbus
         if(!iscommonascii((unsigned char)c[i]) || i > maxlen){
-            return;
+            if(i > floatlen){
+                memcpy(floatstr, c, i);
+                floatstr[i] = '\0';
+                c = floatstr;
+                break;
+            }else{
+                return;
+            }
         }
     }
 
@@ -105,6 +114,7 @@ int main(int argc, char *argv[]){
     INS_AddInstrumentFunction(instruction, 0);
     PIN_AddFiniFunction(fini, 0);
 
+    floatstr = (char *)malloc(sizeof(char) * maxlen);
     // Never returns
     PIN_StartProgram();
     return 0;

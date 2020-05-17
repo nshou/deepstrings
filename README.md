@@ -1,16 +1,16 @@
 # Deepstrings
 
-<!-- Short description -->
+Deepstrings tries to detect every string embedded in binary files to help work on malware analysis, CTF, and all the other types of reverse engineering.
 
 ## Requirement
 
 Hardware:
 - CPU: [Intel Pin-supported CPU](https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-faq)
-  - Tested on Xeon E5520
+  - Tested on Xeon E5520, Core i5-8250U
 
 Software:
-- Linux OS
-  - Tested on RHEL 7.8
+- Linux / OS X / Windows
+  - Tested on RHEL 7.8, Debian 10.4, Windows 10
 - [Intel Pin](https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool)
   - Tested on pin-3.13-98189-g60a6ef199-gcc-linux
 
@@ -49,6 +49,12 @@ $ ${PIN_ROOT}/pin -t obj-intel64/deepstrings.so -- tests/001_catints.out
 ```
 
 This will generate `deepstrings.out` in the same directory.
+
+## Caveats
+
+Deepstrings is a dynamic analysis tool, meaning it executes the target binary as a child process. Make sure you run this tool in an isolated environment if the binary is considered malicious.
+
+Because Deepstrings deals with the target binary as it is, the result is still susceptible to the anti-analysis techniques such as VM detection.
 
 ## License
 

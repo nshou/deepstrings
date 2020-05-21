@@ -109,13 +109,12 @@ VOID fini(INT32 code, VOID *v){
 
 int main(int argc, char *argv[]){
     out = fopen("deepstrings.out", "w");
-    PIN_Init(argc, argv);
+    floatstr = (char *)malloc(sizeof(char) * (maxlen + 1));
 
+    PIN_Init(argc, argv);
     INS_AddInstrumentFunction(instruction, 0);
     PIN_AddFiniFunction(fini, 0);
+    PIN_StartProgram(); // Never returns
 
-    floatstr = (char *)malloc(sizeof(char) * maxlen + 1);
-    // Never returns
-    PIN_StartProgram();
     return 0;
 }

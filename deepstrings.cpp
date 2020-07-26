@@ -9,11 +9,17 @@
 
 static FILE *out;
 static unsigned long maxlen = 128;
-static unsigned long floatlen = 48;
+//TODO: put aside floatstr for now
+//static unsigned long floatlen = 48;
 static unsigned long minlen = 8; //TODO: these should be configurable
 static std::unordered_map<void *, char *> rop_history;
 static std::unordered_map<char *, char *> data_history;
 static char *floatstr;
+
+struct chunk{
+    char *headaddr;
+    char *data;
+};
 
 static unsigned long bisect_right(std::vector<unsigned long> v, unsigned long x){
     unsigned long lo = 0;
@@ -112,54 +118,40 @@ public:
         values.insert(values.begin() + pos / 2, value);
     }
 
+    //TODO: free func registration
+
     ~DCDict(){
         //TODO: free vals
     }
 };
 
+DCDict chunks;
+
 static int iscommonascii(unsigned char ch){
     return (0x20 <= ch && ch <= 0x7e) || ch == 0x09 || ch == 0x0a || ch == 0x0d;
 }
 
-static int dataredundancy(char *c){
-    char *_c;
-    int ret = 0;
+static int isredundant(char *c, unsigned long i){
+    unsigned long l, r;
+    struct chunk *ck, *newck;
 
-    if(data_history.find(c) != data_history.end()){
-        _c = data_history[c];
-        if(strcmp(_c, c) == 0){
-            ret = 1;
-        }else{
-            free(_c);
-            data_history[c] = strdup(c);
-        }
-    }else{
-        data_history[c] = strdup(c);
-    }
+    l = (unsigned long)c;
+    r = l + i;
 
-    return ret;
-}
-
-static int operationalredundancy(void *ip, char *c){
-    char *sub, *_c;
-    int ret = 0;
-
-    if(rop_history.find(ip) != rop_history.end()){
-        _c = rop_history[ip];
-        sub = strstr(_c, c);
-        if(sub != NULL && sub == c && strlen(c) + (int)(sub - _c) == strlen(_c)){
-            ret = 1;
+    ck = (struct chunk *)chunks.get(l, r, NULL);
+    if(ck != NULL){
+        if(memcmp(&(ck->data[c - ck->headaddr]), c, i + 1) == 0){
+            return 1;
         }
     }
 
-    rop_history[ip] = c;
-    return ret;
-}
-
-static int isredundant(void *ip, char *c){
-    int datar = dataredundancy(c);
-    int oper = operationalredundancy(ip, c);
-    return datar || oper;
+    // TODO: free!
+    newck = (struct chunk *)malloc(sizeof(struct chunk));
+    newck->data = (char *)malloc(sizeof(char) * (i + 1));
+    memcpy(newck->data, c, i + 1);
+    newck->headaddr = c;
+    chunks.set(l, r, newck);
+    return 0;
 }
 
 static VOID onread(VOID *ip, VOID *addr){
@@ -167,15 +159,21 @@ static VOID onread(VOID *ip, VOID *addr){
     char *c = (char *)addr;
 
     for(i = 0; c[i] != 0 && i < maxlen; i++){ //TODO: must care about sigsegv and sigbus
+
+        //TODO: put aside floatstr for simplicity for now
+        // if(!iscommonascii((unsigned char)c[i])){
+        //     if(i > floatlen){
+        //         memcpy(floatstr, c, i);
+        //         floatstr[i] = '\0';
+        //         c = floatstr;
+        //         break;
+        //     }else{
+        //         return;
+        //     }
+        // }
+
         if(!iscommonascii((unsigned char)c[i])){
-            if(i > floatlen){
-                memcpy(floatstr, c, i);
-                floatstr[i] = '\0';
-                c = floatstr;
-                break;
-            }else{
-                return;
-            }
+            return;
         }
     }
 
@@ -183,7 +181,7 @@ static VOID onread(VOID *ip, VOID *addr){
         return;
     }
 
-    if(isredundant(ip, c)){
+    if(isredundant(c, i)){
         return;
     }
 

@@ -7,7 +7,11 @@
 #include <algorithm>
 #include "pin.H"
 
-static FILE *out;
+#define DS_TOOL_SUMMARY "Deepstrings tries to detect every string embedded in binary files"
+#define DS_DFL_OUTPUT_FILE "deepstrings.out"
+#define DS_DFL_OUTPUT_FILE_DESC "Specify output file name"
+
+static FILE *output;
 static unsigned long maxlen = 128;
 //TODO: put aside floatstr for now
 //static unsigned long floatlen = 48;
@@ -15,6 +19,8 @@ static unsigned long minlen = 8; //TODO: these should be configurable
 static std::unordered_map<void *, char *> rop_history;
 static std::unordered_map<char *, char *> data_history;
 static char *floatstr;
+
+KNOB<std::string> KnobOutputFile(KNOB_MODE_WRITEONCE, "pintool", "o", DS_DFL_OUTPUT_FILE, DS_DFL_OUTPUT_FILE_DESC);
 
 struct chunk{
     char *headaddr;
@@ -185,7 +191,11 @@ static VOID onread(VOID *ip, VOID *addr){
         return;
     }
 
-    fprintf(out, "rdip:%p addr:%p len:%lu str:%s\n", ip, addr, i, c);
+    fprintf(output, "rdip:%p addr:%p len:%lu str:%s\n", ip, addr, i, c);
+}
+
+static void usage(){
+    fprintf(stderr, "%s\n%s", DS_TOOL_SUMMARY, KNOB_BASE::StringKnobSummary().c_str());
 }
 
 VOID instruction(INS ins, VOID *v){
@@ -206,15 +216,19 @@ VOID instruction(INS ins, VOID *v){
 }
 
 VOID fini(INT32 code, VOID *v){
-    fprintf(out, "#eof\n");
-    fclose(out);
+    fprintf(output, "#eof\n");
+    fclose(output);
 }
 
 int main(int argc, char *argv[]){
-    out = fopen("deepstrings.out", "w");
+    if(PIN_Init(argc, argv)){
+        usage();
+        return -1;
+    }
+
+    output = fopen(KnobOutputFile.Value().c_str(), "w");
     floatstr = (char *)malloc(sizeof(char) * (maxlen + 1));
 
-    PIN_Init(argc, argv);
     INS_AddInstrumentFunction(instruction, 0);
     PIN_AddFiniFunction(fini, 0);
     PIN_StartProgram(); // Never returns

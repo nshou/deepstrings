@@ -1,1 +1,5 @@
 *~
+pintool.log
+obj-intel64/
+tests/*.OUT
+tests/*.LOG

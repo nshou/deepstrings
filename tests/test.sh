@@ -41,8 +41,40 @@ t100_arg_o(){
     test -s t100_arg_o.OUT
     test ! -f deepstrings.out
     rm -f t100_arg_o.OUT
-    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o -- true 2>&1 | grep "NFE: missing argument for -o"
+    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o -- true 2>&1 | grep -q "NFE: missing argument for -o"
     test ! -f deepstrings.out
+}
+
+
+#
+# t2XX: Core function test
+#
+__t2XX_compile_and_check(){
+    o=$(echo "$1" | sed 's/\.c$//')
+    t="${o}.OUT"
+    d="${o}.DS.OUT"
+    gcc -o "${t}" "$1"
+    ./"${t}" | grep -q "Hello, World!"
+    test "$(strings "${t}" | grep -c "Hello, World!")" -eq 0
+    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -- ./"${t}" >/dev/null
+    test "$(grep -c "Hello, World!" "${d}")" -gt 0
+    rm -f "${t}" "${d}"
+}
+
+t200_detect_catints(){
+    __t2XX_compile_and_check catints.c
+}
+
+t201_detect_xorstr(){
+    __t2XX_compile_and_check xorstr.c
+}
+
+t202_detect_stackstr(){
+    __t2XX_compile_and_check stackstr.c
+}
+
+t203_detect_floatstr(){
+    __t2XX_compile_and_check floatstr.c
 }
 
 
@@ -94,3 +126,4 @@ if [ "$1" = "clean" ]; then
 fi
 do_tests "t000_prerequisites" "t001_inspect" || exit 1
 do_tests "t100_arg_o" || exit 1
+do_tests "t200_detect_catints" "t201_detect_xorstr" "t202_detect_stackstr" "t203_detect_floatstr" || exit 1

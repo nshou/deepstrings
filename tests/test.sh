@@ -127,3 +127,4 @@ fi
 do_tests "t000_prerequisites" "t001_inspect" || exit 1
 do_tests "t100_arg_o" || exit 1
 do_tests "t200_detect_catints" "t201_detect_xorstr" "t202_detect_stackstr" "t203_detect_floatstr" || exit 1
+echo All tests passed.

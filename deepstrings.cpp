@@ -13,12 +13,9 @@
 
 static FILE *output;
 static unsigned long maxlen = 128;
-//TODO: put aside floatstr for now
-//static unsigned long floatlen = 48;
 static unsigned long minlen = 8; //TODO: these should be configurable
 static std::unordered_map<void *, char *> rop_history;
 static std::unordered_map<char *, char *> data_history;
-static char *floatstr;
 static char *emitbuffer;
 
 KNOB<std::string> KnobOutputFile(KNOB_MODE_WRITEONCE, "pintool", "o", DS_DFL_OUTPUT_FILE, DS_DFL_OUTPUT_FILE_DESC);
@@ -230,7 +227,6 @@ int main(int argc, char *argv[]){
     }
 
     output = fopen(KnobOutputFile.Value().c_str(), "w");
-    floatstr = (char *)malloc(sizeof(char) * (maxlen + 1));
     emitbuffer = (char *)malloc(sizeof(char) * (maxlen + 1));
 
     INS_AddInstrumentFunction(instruction, 0);

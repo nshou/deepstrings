@@ -19,6 +19,7 @@ static unsigned long minlen = 8; //TODO: these should be configurable
 static std::unordered_map<void *, char *> rop_history;
 static std::unordered_map<char *, char *> data_history;
 static char *floatstr;
+static char *emitbuffer;
 
 KNOB<std::string> KnobOutputFile(KNOB_MODE_WRITEONCE, "pintool", "o", DS_DFL_OUTPUT_FILE, DS_DFL_OUTPUT_FILE_DESC);
 
@@ -142,44 +143,46 @@ static int isredundant(char *c, unsigned long i){
     struct chunk *ck, *newck;
 
     l = (unsigned long)c;
-    r = l + i;
+    r = l + i - 1;
 
     ck = (struct chunk *)chunks.get(l, r, NULL);
     if(ck != NULL){
-        if(memcmp(&(ck->data[c - ck->headaddr]), c, i + 1) == 0){
+        if(memcmp(&(ck->data[c - ck->headaddr]), c, i) == 0){
             return 1;
         }
     }
 
     // TODO: free!
     newck = (struct chunk *)malloc(sizeof(struct chunk));
-    newck->data = (char *)malloc(sizeof(char) * (i + 1));
-    memcpy(newck->data, c, i + 1);
+    newck->data = (char *)malloc(sizeof(char) * i);
+    memcpy(newck->data, c, i);
     newck->headaddr = c;
     chunks.set(l, r, newck);
     return 0;
+}
+
+static void emit(void *ip, char *c, unsigned long i){ //TODO: struct
+    memcpy(emitbuffer, c, i);
+    if(c[i - 1] == 0){
+        i--;
+    }else{
+        emitbuffer[i] = 0;
+    }
+
+    fprintf(output, "rdip:%p addr:%p len:%lu str:%s\n", ip, c, i, emitbuffer);
 }
 
 static VOID onread(VOID *ip, VOID *addr){
     unsigned long i;
     char *c = (char *)addr;
 
-    for(i = 0; c[i] != 0 && i < maxlen; i++){ //TODO: must care about sigsegv and sigbus
-
-        //TODO: put aside floatstr for simplicity for now
-        // if(!iscommonascii((unsigned char)c[i])){
-        //     if(i > floatlen){
-        //         memcpy(floatstr, c, i);
-        //         floatstr[i] = '\0';
-        //         c = floatstr;
-        //         break;
-        //     }else{
-        //         return;
-        //     }
-        // }
-
-        if(!iscommonascii((unsigned char)c[i])){
-            return;
+    for(i = 0; i < maxlen; i++){
+        if(!iscommonascii((unsigned char)c[i])){ //TODO: must care about sigsegv and sigbus
+            if(c[i] == 0){
+                // '\0' counts as a valid character but must split there as a chunk.
+                i++;
+            }
+            break;
         }
     }
 
@@ -191,7 +194,7 @@ static VOID onread(VOID *ip, VOID *addr){
         return;
     }
 
-    fprintf(output, "rdip:%p addr:%p len:%lu str:%s\n", ip, addr, i, c);
+    emit(ip, c, i);
 }
 
 static void usage(){
@@ -228,6 +231,7 @@ int main(int argc, char *argv[]){
 
     output = fopen(KnobOutputFile.Value().c_str(), "w");
     floatstr = (char *)malloc(sizeof(char) * (maxlen + 1));
+    emitbuffer = (char *)malloc(sizeof(char) * (maxlen + 1));
 
     INS_AddInstrumentFunction(instruction, 0);
     PIN_AddFiniFunction(fini, 0);

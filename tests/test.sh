@@ -128,6 +128,7 @@ if [ "$1" = "clean" ]; then
     clean
     exit 0
 fi
+make obj-intel64/deepstrings.so -C .. || exit 1
 do_tests "t000_prerequisites" "t001_inspect" || exit 1
 do_tests "t100_arg_o" || exit 1
 do_tests "t200_detect_catints" "t201_detect_xorstr" "t202_detect_stackstr" "t203_detect_floatstr" "t204_detect_encstr" || exit 1

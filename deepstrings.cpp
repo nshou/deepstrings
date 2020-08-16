@@ -25,6 +25,12 @@ struct chunk{
     char *data;
 };
 
+struct emitinfo{
+    void *insptr;
+    char *headptr;
+    unsigned long size;
+};
+
 static unsigned long bisect_right(std::vector<unsigned long> v, unsigned long x){
     unsigned long lo = 0;
     unsigned long hi = v.size();
@@ -158,19 +164,20 @@ static int isredundant(char *c, unsigned long i){
     return 0;
 }
 
-static void emit(void *ip, char *c, unsigned long i){ //TODO: struct
-    memcpy(emitbuffer, c, i);
-    if(c[i - 1] == 0){
-        i--;
+static void emit(struct emitinfo *ei){
+    memcpy(emitbuffer, ei->headptr, ei->size);
+    if(ei->headptr[ei->size - 1] == 0){
+        ei->size--;
     }else{
-        emitbuffer[i] = 0;
+        emitbuffer[ei->size] = 0;
     }
 
-    fprintf(output, "rdip:%p addr:%p len:%lu str:%s\n", ip, c, i, emitbuffer);
+    fprintf(output, "insptr:%p hdptr:%p len:%lu str:%s\n", ei->insptr, ei->headptr, ei->size, emitbuffer);
 }
 
 static VOID onread(VOID *ip, VOID *addr){
     unsigned long i;
+    struct emitinfo ei;
     char *c = (char *)addr;
 
     for(i = 0; i < maxlen; i++){
@@ -191,7 +198,10 @@ static VOID onread(VOID *ip, VOID *addr){
         return;
     }
 
-    emit(ip, c, i);
+    ei.insptr = ip;
+    ei.headptr = c;
+    ei.size = i;
+    emit(&ei);
 }
 
 static void usage(){

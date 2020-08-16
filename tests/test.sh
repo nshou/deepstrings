@@ -53,7 +53,7 @@ __t2XX_compile_and_check(){
     o=$(echo "$1" | sed 's/\.c$//')
     t="${o}.OUT"
     d="${o}.DS.OUT"
-    gcc -o "${t}" "$1"
+    gcc -o "${t}" "$@"
     ./"${t}" | grep -q "Hello, World!"
     test "$(strings "${t}" | grep -c "Hello, World!")" -eq 0
     "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -- ./"${t}" >/dev/null
@@ -75,6 +75,10 @@ t202_detect_stackstr(){
 
 t203_detect_floatstr(){
     __t2XX_compile_and_check floatstr.c
+}
+
+t204_detect_encstr(){
+    __t2XX_compile_and_check encstr.c -lcrypto
 }
 
 
@@ -126,5 +130,5 @@ if [ "$1" = "clean" ]; then
 fi
 do_tests "t000_prerequisites" "t001_inspect" || exit 1
 do_tests "t100_arg_o" || exit 1
-do_tests "t200_detect_catints" "t201_detect_xorstr" "t202_detect_stackstr" "t203_detect_floatstr" || exit 1
+do_tests "t200_detect_catints" "t201_detect_xorstr" "t202_detect_stackstr" "t203_detect_floatstr" "t204_detect_encstr" || exit 1
 echo All tests passed.

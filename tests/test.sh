@@ -59,7 +59,7 @@ t101_arg_m(){
     test "$(grep -c "FANTASTIC\\." ${d})" -eq 1
     "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -m INVALID -- ./"${t}"
     test "$(cat ${d})" = "#eof"
-    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -m -- ./"${t}" | grep -q "NFE: missing argument for -m"
+    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -m -- true 2>&1 | grep -q "NFE: missing argument for -m"
     rm -f "${t}" "${d}"
 }
 

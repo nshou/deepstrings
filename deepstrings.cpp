@@ -168,32 +168,36 @@ static int isredundant(char *c, unsigned long i){
 }
 
 static void emit(struct emitinfo *ei){
-    memcpy(emitbuffer, ei->headptr, ei->size);
     if(ei->headptr[ei->size - 1] == 0){
         ei->size--;
-    }else{
-        emitbuffer[ei->size] = 0;
     }
+
+    if(ei->size < minlen || ei->size > maxlen){
+        return;
+    }
+
+    memcpy(emitbuffer, ei->headptr, ei->size);
+    emitbuffer[ei->size] = 0;
 
     fprintf(output, "insptr:%p hdptr:%p len:%lu str:%s\n", ei->insptr, ei->headptr, ei->size, emitbuffer);
 }
 
 static VOID onread(VOID *ip, VOID *addr){
-    unsigned long i;
     struct emitinfo ei;
+    unsigned long i = 0;
     char *c = (char *)addr;
 
-    for(i = 0; i < maxlen; i++){
-        if(!iscommonascii((unsigned char)c[i])){ //TODO: must care about sigsegv and sigbus
-            if(c[i] == 0){
-                // '\0' counts as a valid character but must split there as a chunk.
-                i++;
-            }
-            break;
-        }
+    while(iscommonascii((unsigned char)c[i])){ //TODO: must care about sigsegv and sigbus
+        i++;
     }
 
-    if(i < minlen || i >= maxlen){
+    if(c[i] == 0){
+        // '\0' counts as a valid character but must split here as a chunk.
+        i++;
+    }
+
+    if(i == 0){
+        // Grabbed one non-ascii. Skip.
         return;
     }
 

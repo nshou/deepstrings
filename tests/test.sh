@@ -63,6 +63,24 @@ t101_arg_m(){
     rm -f "${t}" "${d}"
 }
 
+t102_arg_n(){
+    t=t102_arg_n.OUT
+    d=t102_arg_n.DS.OUT
+    gcc -o "${t}" 10chars.c
+    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -n 18446744073709551615 -- ./"${t}"
+    test "$(cat ${d})" = "#eof"
+    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -n 1 -- ./"${t}"
+    test -z "$(grep len:0 ${d})"
+    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -n 11 -- ./"${t}"
+    test "$(grep -c "FANTASTIC\\." ${d})" -eq 0
+    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -n 10 -- ./"${t}"
+    test "$(grep -c "FANTASTIC\\." ${d})" -eq 1
+    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -n INVALID -- ./"${t}"
+    test "$(grep -c "FANTASTIC\\." ${d})" -eq 1
+    "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -n -- true 2>&1 | grep -q "NFE: missing argument for -n"
+    rm -f "${t}" "${d}"
+}
+
 
 #
 # t2XX: Core function test
@@ -148,6 +166,6 @@ if [ "$1" = "clean" ]; then
 fi
 make obj-intel64/deepstrings.so -C .. || exit 1
 do_tests "t000_prerequisites" "t001_inspect" || exit 1
-do_tests "t100_arg_o" "t101_arg_m" || exit 1
+do_tests "t100_arg_o" "t101_arg_m" "t102_arg_n" || exit 1
 do_tests "t200_detect_catints" "t201_detect_xorstr" "t202_detect_stackstr" "t203_detect_floatstr" "t204_detect_encstr" || exit 1
 echo All tests passed.

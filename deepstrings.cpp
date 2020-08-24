@@ -12,16 +12,19 @@
 #define DS_DFL_OUTPUT_FILE_DESC "Specify output file name"
 #define DS_DFL_MAXLEN "256"
 #define DS_DFL_MAXLEN_DESC "Max length to search"
+#define DS_DFL_MINLEN "4"
+#define DS_DFL_MINLEN_DESC "Min length to search"
 
 static FILE *output;
 static unsigned long maxlen;
-static unsigned long minlen = 8; //TODO: these should be configurable
+static unsigned long minlen;
 static std::unordered_map<void *, char *> rop_history;
 static std::unordered_map<char *, char *> data_history;
 static char *emitbuffer;
 
 KNOB<std::string> KnobOutputFile(KNOB_MODE_WRITEONCE, "pintool", "o", DS_DFL_OUTPUT_FILE, DS_DFL_OUTPUT_FILE_DESC);
 KNOB<unsigned long> KnobMaxLen(KNOB_MODE_WRITEONCE, "pintool", "m", DS_DFL_MAXLEN, DS_DFL_MAXLEN_DESC);
+KNOB<unsigned long> KnobMinLen(KNOB_MODE_WRITEONCE, "pintool", "n", DS_DFL_MINLEN, DS_DFL_MINLEN_DESC);
 
 struct chunk{
     char *headaddr;
@@ -245,6 +248,7 @@ int main(int argc, char *argv[]){
 
     output = fopen(KnobOutputFile.Value().c_str(), "w");
     maxlen = KnobMaxLen.Value();
+    minlen = KnobMinLen.Value();
     emitbuffer = (char *)malloc(sizeof(char) * (maxlen + 1));
 
     INS_AddInstrumentFunction(instruction, 0);

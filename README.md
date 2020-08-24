@@ -1,6 +1,6 @@
 # Deepstrings
 
-Deepstrings tries to detect every string embedded in binary files to help work on malware analysis, CTF, and all the other types of reverse engineering.
+Deepstrings detects every string embedded in binary files to help work on malware analysis, CTF, and all the other types of reverse engineering.
 
 ## Requirement
 

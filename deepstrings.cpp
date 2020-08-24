@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "pin.H"
 
-#define DS_TOOL_SUMMARY "Deepstrings tries to detect every string embedded in binary files"
+#define DS_TOOL_SUMMARY "Deepstrings detects every string embedded in binary files"
 #define DS_DFL_OUTPUT_FILE "deepstrings.out"
 #define DS_DFL_OUTPUT_FILE_DESC "Specify output file name"
 #define DS_DFL_MAXLEN "256"

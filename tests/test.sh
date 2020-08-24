@@ -9,6 +9,7 @@
 # t0XX: Preliminary test
 #
 t000_prerequisites(){
+    shellcheck test.sh
     test -n "${PIN_ROOT}"
     test -f "${PIN_ROOT}"/pin
     test -s "${PIN_ROOT}"/pin
@@ -48,7 +49,7 @@ t100_arg_o(){
 t101_arg_m(){
     t=t101_arg_m.OUT
     d=t101_arg_m.DS.OUT
-    gcc -o "${t}" 10chars.c
+    gcc -Wall -Wextra -Werror -o "${t}" 10chars.c
     "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -m 0 -- ./"${t}"
     test "$(cat ${d})" = "#eof"
     "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -m 1 -- ./"${t}"
@@ -66,7 +67,7 @@ t101_arg_m(){
 t102_arg_n(){
     t=t102_arg_n.OUT
     d=t102_arg_n.DS.OUT
-    gcc -o "${t}" 10chars.c
+    gcc -Wall -Wextra -Werror -o "${t}" 10chars.c
     "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -n 18446744073709551615 -- ./"${t}"
     test "$(cat ${d})" = "#eof"
     "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -n 1 -- ./"${t}"
@@ -89,7 +90,7 @@ __t2XX_compile_and_check(){
     o=$(echo "$1" | sed 's/\.c$//')
     t="${o}.OUT"
     d="${o}.DS.OUT"
-    gcc -o "${t}" "$@"
+    gcc -Wall -Wextra -Werror -o "${t}" "$@"
     ./"${t}" | grep -q "Hello, World!"
     test "$(strings "${t}" | grep -c "Hello, World!")" -eq 0
     "${PIN_ROOT}"/pin -t ../obj-intel64/deepstrings.so -o "${d}" -- ./"${t}" >/dev/null

@@ -151,7 +151,7 @@ do_tests(){
 }
 
 clean(){
-    rm -f deepstrings.out pintool.log
+    rm -f deepstrings.out pintool.log pin.log
     rm -f -- *.LOG
     rm -f -- *.OUT
 }

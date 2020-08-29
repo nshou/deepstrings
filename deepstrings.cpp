@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unordered_map>
 #include <vector>
-#include <stdexcept>
-#include <algorithm>
 #include "pin.H"
 
 #define DS_TOOL_SUMMARY "Deepstrings detects every string embedded in binary files"
@@ -18,8 +15,6 @@
 static FILE *output;
 static unsigned long maxlen;
 static unsigned long minlen;
-static std::unordered_map<void *, char *> rop_history;
-static std::unordered_map<char *, char *> data_history;
 static char *emitbuffer;
 
 KNOB<std::string> KnobOutputFile(KNOB_MODE_WRITEONCE, "pintool", "o", DS_DFL_OUTPUT_FILE, DS_DFL_OUTPUT_FILE_DESC);

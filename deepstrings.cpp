@@ -238,6 +238,7 @@ VOID instruction(INS ins, VOID *v){
 VOID fini(INT32 code, VOID *v){
     fprintf(output, "#eof\n");
     fclose(output);
+    free(emitbuffer);
 }
 
 int main(int argc, char *argv[]){

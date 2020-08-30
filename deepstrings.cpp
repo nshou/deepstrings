@@ -70,8 +70,24 @@ class DCDict{
 private:
     std::vector<unsigned long> keyblks;
     std::vector<void *> values;
+    void (*freefn)(void *);
 
 public:
+    DCDict() : DCDict(NULL){
+    }
+
+    DCDict(void (*fn)(void *)){
+        setfreefn(fn);
+    }
+
+    void setfreefn(void (*fn)(void *)){
+        if(fn == NULL){
+            freefn = free;
+        }else{
+            freefn = fn;
+        }
+    }
+
     void *get(unsigned long keyblk_l, unsigned long keyblk_r, void *dfl){
         unsigned long lpos;
         unsigned long rpos;
@@ -109,9 +125,11 @@ public:
         if(lpos != rpos || lpos % 2 !=0){
             ldel = 2 * (lpos / 2);
             rdel = 2 * ((rpos + 1) / 2);
+            for(auto itr = values.begin() + ldel / 2; itr != values.begin() + rdel / 2; itr++){
+                freefn(*itr);
+            }
             keyblks.erase(keyblks.begin() + ldel, keyblks.begin() + rdel);
             values.erase(values.begin() + ldel / 2, values.begin() + rdel / 2);
-            //TODO: free val
         }
     }
 
@@ -129,14 +147,19 @@ public:
         values.insert(values.begin() + pos / 2, value);
     }
 
-    //TODO: free func registration
-
     ~DCDict(){
-        //TODO: free vals
+        for(auto itr = values.begin(); itr != values.end(); itr++){
+            freefn(*itr);
+        }
     }
 };
 
-DCDict chunks;
+static void freechunk(struct chunk *ck){
+    free(ck->data);
+    free(ck);
+}
+
+DCDict chunks((void (*)(void *))freechunk);
 
 static int iscommonascii(unsigned char ch){
     return (0x20 <= ch && ch <= 0x7e) || ch == 0x09 || ch == 0x0a || ch == 0x0d;
@@ -156,7 +179,6 @@ static int isredundant(char *c, unsigned long i){
         }
     }
 
-    // TODO: free!
     newck = (struct chunk *)malloc(sizeof(struct chunk));
     newck->data = (char *)malloc(sizeof(char) * i);
     memcpy(newck->data, c, i);

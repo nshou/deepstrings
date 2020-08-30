@@ -181,9 +181,11 @@ static int isredundant(char *c, unsigned long i){
 
     newck = (struct chunk *)malloc(sizeof(struct chunk));
     newck->data = (char *)malloc(sizeof(char) * i);
-    memcpy(newck->data, c, i);
-    newck->headaddr = c;
-    chunks.set(l, r, newck);
+    if(newck != NULL && newck->data != NULL){
+        memcpy(newck->data, c, i);
+        newck->headaddr = c;
+        chunks.set(l, r, newck);
+    }
     return 0;
 }
 
@@ -268,6 +270,10 @@ int main(int argc, char *argv[]){
     maxlen = KnobMaxLen.Value();
     minlen = KnobMinLen.Value();
     emitbuffer = (char *)malloc(sizeof(char) * (maxlen + 1));
+    if(emitbuffer == NULL){
+        fprintf(stderr, "malloc error: emitbuffer\n");
+        return -2;
+    }
 
     INS_AddInstrumentFunction(instruction, 0);
     PIN_AddFiniFunction(fini, 0);
